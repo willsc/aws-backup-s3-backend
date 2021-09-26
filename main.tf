@@ -3,6 +3,9 @@ provider "aws" {
   region = var.region
 }
 
+
+
+
 module "backup" {
   source                = "cloudposse/backup/aws"
   name                  = "daily_backup"
@@ -30,6 +33,44 @@ module "backup" {
   kms_key_arn           = "arn:aws:kms:eu-west-1:897086669335:key/b90a0aa4-7b69-48b1-8cfd-917f43bdd802"
   vault_enabled         = true
 }
+
+
+
+module "backup_notification" {
+  source = "./terraform-aws-backup-notifications"
+  enabled = true
+  backup_vault_events = [
+    "BACKUP_JOB_STARTED",
+    "BACKUP_JOB_FAILED",
+    "BACKUP_JOB_SUCCESSFUL",
+  ]
+
+
+
+  topic_subscriptions = {
+    notify_slack = {
+      protocol = "lambda"
+      endpoint               = module.lambda.arn
+      endpoint_auto_confirms = true
+      raw_message_delivery = false
+    }
+  }
+}
+
+
+
+module "lambda" {
+  source           = "moritzzimmer/lambda/aws"
+  version          = "5.16.0"
+
+  filename         = "slack-hook.py.zip"
+  function_name    = "my-function"
+  handler          = "my-handler"
+  runtime          = "python3.9"
+  source_code_hash = filebase64sha256("${path.module}/slack-hook.py.zip")
+}
+
+
 
 
 /*
