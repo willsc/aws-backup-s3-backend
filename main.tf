@@ -37,7 +37,8 @@ module "backup" {
 
 
 module "backup_notification" {
-  source = "./terraform-aws-backup-notifications"
+#  source = "./terraform-aws-backup-notifications"
+  source = "github.com/willsc/aws-backup-notifications.git?ref=v1.0"
   enabled = true
   backup_vault_events = [
     "BACKUP_JOB_STARTED",
@@ -60,8 +61,9 @@ module "backup_notification" {
 
 
 module "lambda" {
-  source           = "moritzzimmer/lambda/aws"
-  version          = "5.16.0"
+ # source           = "moritzzimmer/lambda/aws"
+  source           = "github.com/willsc/terraform-lambda.git?ref=v1.0"
+ # version          = "5.16.0"
 
   filename         = "slack-hook.py.zip"
   function_name    = "my-function"
